@@ -1,0 +1,9 @@
+[package]
+name = "rangepoint-map"
+version = "1.0.0-prealpha"
+authors = ["Savanna Evens"]
+edition = "2024"
+description = "A small crate to map ranges of numbers to values while allowing quick point retrievals."
+license = "MIT"
+
+[dependencies]
