@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "rangepoint-map"
+name = "exclusive-range-map"
 version = "1.0.0-prealpha"

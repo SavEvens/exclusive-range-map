@@ -1,33 +1,33 @@
 use std::ops::{Index, IndexMut, Range};
 
-enum RangePointMapNodeColor{
+enum ExclusiveRangeMapNodeColor{
     RED,
     BLACK
 }
 
-struct RangePointMapNode<T>{
+struct ExclusiveRangeMapNode<T>{
     range : Range<usize>,
     value : T,
-    color : RangePointMapNodeColor,
-    child_left  : Option<Box<RangePointMapNode<T>>>,
-    child_right : Option<Box<RangePointMapNode<T>>>
+    color : ExclusiveRangeMapNodeColor,
+    child_left  : Option<Box<ExclusiveRangeMapNode<T>>>,
+    child_right : Option<Box<ExclusiveRangeMapNode<T>>>
 }
 
 
-pub struct RangePointInvalidInsertError;
+pub struct ExclusiveRangeInvalidInsertError;
 
-enum RangePointMapNodeRotateDirection{
+enum ExclusiveRangeMapNodeRotateDirection{
     RIGHT,
     LEFT
 }
 
-impl<T> RangePointMapNode<T>{
+impl<T> ExclusiveRangeMapNode<T>{
 
-    fn new(range : Range<usize>, value : T) -> RangePointMapNode<T>{
-        RangePointMapNode{
+    fn new(range : Range<usize>, value : T) -> ExclusiveRangeMapNode<T>{
+        ExclusiveRangeMapNode{
             range: range,
             value: value,
-            color: RangePointMapNodeColor::BLACK,
+            color: ExclusiveRangeMapNodeColor::BLACK,
             child_left: None,
             child_right: None
         }
@@ -36,15 +36,15 @@ impl<T> RangePointMapNode<T>{
 
 }
 
-pub struct RangePointMap<T>{
-    head : Option<Box<RangePointMapNode<T>>>,
+pub struct ExclusiveRangeMap<T>{
+    head : Option<Box<ExclusiveRangeMapNode<T>>>,
     size : usize,
 }
 
 
-impl<T> RangePointMap<T>{
-    pub fn new() -> RangePointMap<T>{
-        RangePointMap{
+impl<T> ExclusiveRangeMap<T>{
+    pub fn new() -> ExclusiveRangeMap<T>{
+        ExclusiveRangeMap{
             head: None,
             size: 0
         }
@@ -54,29 +54,29 @@ impl<T> RangePointMap<T>{
         self.size
     }
 
-    fn place_node(start_node : &mut RangePointMapNode<T>, new_node : RangePointMapNode<T>) -> Result<(), RangePointInvalidInsertError> {
+    fn place_node(start_node : &mut ExclusiveRangeMapNode<T>, new_node : ExclusiveRangeMapNode<T>) -> Result<(), ExclusiveRangeInvalidInsertError> {
         let selected_node = start_node;
         loop{
             if new_node.range.start < selected_node.range.start 
                 && new_node.range.end > selected_node.range.start {
-                return Err(RangePointInvalidInsertError);
+                return Err(ExclusiveRangeInvalidInsertError);
             }
             if new_node.range.start < selected_node.range.end
                 && new_node.range.end > selected_node.range.end {
-                return Err(RangePointInvalidInsertError);
+                return Err(ExclusiveRangeInvalidInsertError);
             }
 
             let left = selected_node.range.start > new_node.range.end;
             let right = selected_node.range.end < new_node.range.start;
 
             if left && right{
-                return Err(RangePointInvalidInsertError);
+                return Err(ExclusiveRangeInvalidInsertError);
             }
 
             if left{
                 match &mut selected_node.child_left{
                     Some(child) => {
-        return RangePointMap::place_node(child, new_node);
+        return ExclusiveRangeMap::place_node(child, new_node);
                     },
                     None => {
                         selected_node.child_right = Some(Box::new(new_node));
@@ -86,7 +86,7 @@ impl<T> RangePointMap<T>{
             }else{
                 match &mut selected_node.child_right{
                     Some(child) => {
-                        return RangePointMap::place_node(child, new_node);
+                        return ExclusiveRangeMap::place_node(child, new_node);
                     },
                     None => {
                         selected_node.child_right = Some(Box::new(new_node));
@@ -102,10 +102,10 @@ impl<T> RangePointMap<T>{
         //TODO
     }
 
-    pub fn insert(&mut self, key : Range<usize>, value : T) -> Result<(), RangePointInvalidInsertError>{
+    pub fn insert(&mut self, key : Range<usize>, value : T) -> Result<(), ExclusiveRangeInvalidInsertError>{
         match &mut self.head{
             Some(head_node) => {
-                let res = RangePointMap::place_node(head_node, RangePointMapNode::new(key, value));
+                let res = ExclusiveRangeMap::place_node(head_node, ExclusiveRangeMapNode::new(key, value));
                 match res{
                     Ok(_) => {
                         self.balance_tree();
@@ -116,21 +116,21 @@ impl<T> RangePointMap<T>{
                 return res;
             },
             None=> {
-                self.head = Some(Box::new(RangePointMapNode::new(key, value)));
+                self.head = Some(Box::new(ExclusiveRangeMapNode::new(key, value)));
                 self.size += 1;
                 return Ok(())
             }
         }
     }
 
-    fn find_node(&self, key : &usize) -> Option<&Box<RangePointMapNode<T>>> {
+    fn find_node(&self, key : &usize) -> Option<&Box<ExclusiveRangeMapNode<T>>> {
         match & self.head{
             Some(_) => {},
             None => {
                 return None;
             }
         }
-        let mut selected_node : &Box<RangePointMapNode<T>>;
+        let mut selected_node : &Box<ExclusiveRangeMapNode<T>>;
         selected_node = self.head.as_ref()?;
 
         loop{
@@ -184,14 +184,14 @@ mod tests{
 
     #[test]
     fn test_create_rangepoint_map(){
-        let new_map = RangePointMap::<u64>::new();
+        let new_map = ExclusiveRangeMap::<u64>::new();
 
         assert_eq!(new_map.size, 0);
     }
 
     #[test]
     fn test_basic_rangepoint_map_ops(){
-        let mut map = RangePointMap::<u64>::new();
+        let mut map = ExclusiveRangeMap::<u64>::new();
 
         let res1 = map.insert(0..5 as usize, 12);
         let res2 = map.insert(6..12 as usize, 64);
@@ -237,7 +237,7 @@ mod tests{
     #[test]
     fn test_invalid_rangepoint_map_insert(){
 
-        let mut map = RangePointMap::<u64>::new();
+        let mut map = ExclusiveRangeMap::<u64>::new();
 
         let res1 = map.insert(0..20 as usize, 44);
         let res2 = map.insert(20..50 as usize, 55);
@@ -245,14 +245,14 @@ mod tests{
 
         match res1{
             Ok(()) => {},
-            Err(RangePointInvalidInsertError) => {
+            Err(ExclusiveRangeInvalidInsertError) => {
                 panic!("There should be no error in this insertion.");
             }
         }
 
         match res2{
             Ok(()) => {},
-            Err(RangePointInvalidInsertError) => {
+            Err(ExclusiveRangeInvalidInsertError) => {
                 panic!("There should be no error in this insertion.");
             }
         }
@@ -261,7 +261,7 @@ mod tests{
             Ok(()) => {
                 panic!("This insertion should cause an error!");
             },
-            Err(RangePointInvalidInsertError) => {}
+            Err(ExclusiveRangeInvalidInsertError) => {}
         }
     }
 }

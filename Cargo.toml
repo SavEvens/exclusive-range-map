@@ -1,9 +1,9 @@
 [package]
-name = "rangepoint-map"
+name = "exclusive-range-map"
 version = "1.0.0-prealpha"
 authors = ["Savanna Evens"]
 edition = "2024"
-description = "A small crate to map ranges of numbers to values while allowing quick point retrievals."
+description = "A small crate to map exclusive ranges of numbers to values while allowing quick point retrievals. Attempting an insert of overlapping ranges will result in a failed insert."
 license = "MIT"
 
 [dependencies]
