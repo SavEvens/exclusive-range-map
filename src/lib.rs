@@ -57,6 +57,14 @@ impl<T> ExclusiveRangeMap<T>{
     fn place_node(start_node : &mut ExclusiveRangeMapNode<T>, new_node : ExclusiveRangeMapNode<T>) -> Result<(), ExclusiveRangeInvalidInsertError> {
         let selected_node = start_node;
         loop{
+            
+            let left = selected_node.range.start > new_node.range.end;
+            let right = selected_node.range.end < new_node.range.start;
+
+            if left && right{
+                return Err(ExclusiveRangeInvalidInsertError);
+            }
+
             if new_node.range.start < selected_node.range.start 
                 && new_node.range.end > selected_node.range.start {
                 return Err(ExclusiveRangeInvalidInsertError);
@@ -66,12 +74,6 @@ impl<T> ExclusiveRangeMap<T>{
                 return Err(ExclusiveRangeInvalidInsertError);
             }
 
-            let left = selected_node.range.start > new_node.range.end;
-            let right = selected_node.range.end < new_node.range.start;
-
-            if left && right{
-                return Err(ExclusiveRangeInvalidInsertError);
-            }
 
             if left{
                 match &mut selected_node.child_left{
@@ -102,10 +104,12 @@ impl<T> ExclusiveRangeMap<T>{
         //TODO
     }
 
-    pub fn insert(&mut self, key : Range<usize>, value : T) -> Result<(), ExclusiveRangeInvalidInsertError>{
+    pub fn insert(&mut self, key : Range<usize>, value : T)
+        -> Result<(), ExclusiveRangeInvalidInsertError>{
         match &mut self.head{
             Some(head_node) => {
-                let res = ExclusiveRangeMap::place_node(head_node, ExclusiveRangeMapNode::new(key, value));
+                let res = ExclusiveRangeMap::place_node(head_node,
+                    ExclusiveRangeMapNode::new(key, value));
                 match res{
                     Ok(_) => {
                         self.balance_tree();
